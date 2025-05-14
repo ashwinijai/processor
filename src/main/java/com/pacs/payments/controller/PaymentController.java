@@ -1,6 +1,6 @@
 package com.pacs.payments.controller;
 
-import com.pacs.payments.model.CamelRequest;
+import com.pacs.payments.model.FetchFilePathRequest;
 import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,12 +15,9 @@ public class PaymentController {
     @Autowired
     ProducerTemplate producerTemplate;
 
-    @Autowired
-    CamelContext camelContext;
-
     @PostMapping("/validateConvertSend")
-    public String validateConvertSend(@RequestBody CamelRequest camelRequest){
-        producerTemplate.sendBody("direct:fetchPathFromUrl",camelRequest);
+    public String validateConvertSend(@RequestBody FetchFilePathRequest camelRequest){
+        producerTemplate.sendBody("direct:fetchFileLocations",camelRequest);
         return "File Moved successfully";
     }
 }

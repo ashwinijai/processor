@@ -1,29 +1,34 @@
 package com.pacs.payments.processor;
 
-import com.pacs.payments.entity.PacsFileDetails;
-import com.pacs.payments.model.CamelRequest;
-import com.pacs.payments.repo.PacsFileDetailsRepository;
-import com.pacs.payments.repo.PacsFileDetailsRepositoryImpl;
-import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pacs.payments.model.FetchFilePathResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.InputStream;
+
 @Component
+@Slf4j
 public class DBProcessor implements Processor {
     @Override
     public void process(Exchange exchange) throws Exception {
-        CamelRequest camelRequest = exchange.getIn().getBody(CamelRequest.class);
-        PacsFileDetails pacsFileDetails =  PacsFileDetails.builder().sourceXsdPath("/Users/ashwinijayaraman/Downloads/archive_payments_clearing_and_settlement_9_9b41eab473/pacs.002.001.10.xsd").painXsdPath("/Users/ashwinijayaraman/Downloads/archive_payments_initiation_3_0625d854ae/pain.002.001.03.xsd").sourceXmlPath("/Users/ashwinijayaraman/Downloads/sourceXml.xml").build();
-        if(null!=pacsFileDetails){
-            exchange.getIn().setHeader("sourceXsdPath", pacsFileDetails.getSourceXsdPath());
-            exchange.getIn().setHeader("painXsdPath", pacsFileDetails.getPainXsdPath());
-            exchange.getIn().setHeader("sourceXmlPath", pacsFileDetails.getSourceXmlPath());
-        }
-        else{
-            throw new Exception("No value found in DB for given input combination");
-        }
+        log.info("The HTTP response code is: {}", exchange.getIn().getHeader(Exchange.HTTP_RESPONSE_CODE));
+        log.info("The response body is: {}", exchange.getIn().getBody(String.class));
+        String body = exchange.getIn().getBody(String.class);
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        objectMapper.configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, true);
+        FetchFilePathResponse fetchFilePathResponse = objectMapper.readValue(body, FetchFilePathResponse.class);
+        exchange.getIn().setHeader("pacsXsdPath", fetchFilePathResponse.getPacsXsdPath());
+        exchange.getIn().setHeader("painXsdPath", fetchFilePathResponse.getPainXsdPath());
+        exchange.getIn().setHeader("painXmlPath", fetchFilePathResponse.getPainXmlPath());
+        exchange.getIn().setHeader("targetPacsXmlPath", fetchFilePathResponse.getTargetPacsXmlPath());
+        exchange.getIn().setHeader("paymentType", fetchFilePathResponse.getPaymentType());
+        exchange.getIn().setHeader("sourceSystem", fetchFilePathResponse.getSourceSystem());
     }
+
 }
