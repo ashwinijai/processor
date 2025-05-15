@@ -10,4 +10,5 @@ import lombok.NoArgsConstructor;
 public class XsdValidationModel {
     private String xsdPath;
     private String xmlPath;
+    private String xmlValue;
 }
