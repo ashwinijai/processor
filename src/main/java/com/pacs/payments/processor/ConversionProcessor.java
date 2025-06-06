@@ -4,8 +4,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pacs.payments.model.ConvertorModel;
-import com.pacs.payments.model.FetchFilePathRequest;
-import com.pacs.paymentsUtil.service.PainToPaymentService;
+import com.pacs.payments.service.PainToPaymentService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -21,8 +20,8 @@ public class ConversionProcessor implements Processor {
         objectMapper.configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, true);
         ConvertorModel convertorModel = objectMapper.readValue(exchange.getIn().getBody(String.class), ConvertorModel.class);
         PainToPaymentService painToPaymentService = new PainToPaymentService();
-       // String pacsXml = painToPaymentService.convertToPain(convertorModel.getPaymentType(), convertorModel.getXmlPath());
-        String pacsXml ="<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" +
+       String pacsXml = painToPaymentService.convertToPain(convertorModel.getPaymentType(), convertorModel.getXmlPath());
+       /* String pacsXml ="<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" +
                 "<document xmlns:ns2=\"urn:iso:std:iso:20022:tech:xsd:pacs.002.001.10\">\n" +
                 "    <ns2:FIToFIPmtStsRpt>\n" +
                 "        <ns2:GrpHdr>\n" +
@@ -37,7 +36,7 @@ public class ConversionProcessor implements Processor {
                 "            <ns2:GrpSts>ACCP</ns2:GrpSts>\n" +
                 "        </ns2:OrgnlGrpInfAndSts>\n" +
                 "    </ns2:FIToFIPmtStsRpt>\n" +
-                "</document>\n";
+                "</document>\n";*/
         log.info("Pacs Xml  - {}", pacsXml);
         exchange.getIn().setHeader("pacsXml",pacsXml);
 
